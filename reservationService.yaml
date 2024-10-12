@@ -1,0 +1,174 @@
+openapi: 3.0.3
+info:
+  version: '1.0.0'
+  title: Movie Ticketing API - Seat Reservation Service
+  description: >
+    This API allows users to reserve seats for a selected movie and showtime,
+    retrieve reservation details, and cancel reservations. It facilitates the
+    management of seat reservations in the movie ticketing system.
+
+servers:
+  - url: https://api.movieticketing.com/v1
+
+paths:
+  /reservations:
+    post:
+      summary: Create a new seat reservation
+      description: Reserve seats for a specific movie and showtime.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+      responses:
+        '201':
+          description: Reservation created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+        '400':
+          description: Invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /reservations/{reservation_id}:
+    get:
+      summary: Get reservation details
+      description: Retrieve the details of a specific reservation using its ID.
+      parameters:
+        - in: path
+          name: reservation_id
+          schema:
+            type: string
+          required: true
+          description: The unique identifier of the reservation.
+      responses:
+        '200':
+          description: Reservation details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+        '404':
+          description: Reservation not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Cancel a reservation
+      description: Cancel an existing reservation using its ID.
+      parameters:
+        - in: path
+          name: reservation_id
+          schema:
+            type: string
+          required: true
+          description: The unique identifier of the reservation.
+      responses:
+        '200':
+          description: Reservation canceled successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid reservation ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Reservation not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ReservationRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: The unique identifier of the user.
+        movie_id:
+          type: string
+          description: The unique identifier of the movie.
+        showtime_id:
+          type: string
+          description: The unique identifier of the showtime.
+        seats:
+          type: array
+          items:
+            type: string
+          description: A list of seat numbers to reserve.
+      required:
+        - user_id
+        - movie_id
+        - showtime_id
+        - seats
+      example:
+        user_id: 'user12345'
+        movie_id: 'mov12345'
+        showtime_id: 'show98765'
+        seats:
+          - 'A1'
+          - 'A2'
+    ReservationResponse:
+      type: object
+      properties:
+        reservation_id:
+          type: string
+          description: The unique identifier of the reservation.
+        user_id:
+          type: string
+          description: The unique identifier of the user.
+        movie_id:
+          type: string
+          description: The unique identifier of the movie.
+        showtime_id:
+          type: string
+          description: The unique identifier of the showtime.
+        seats:
+          type: array
+          items:
+            type: string
+          description: A list of reserved seat numbers.
+        reservation_time:
+          type: string
+          format: date-time
+          description: The time when the reservation was made.
+      example:
+        reservation_id: 'res56789'
+        user_id: 'user12345'
+        movie_id: 'mov12345'
+        showtime_id: 'show98765'
+        seats:
+          - 'A1'
+          - 'A2'
+        reservation_time: '2023-10-12T15:30:00Z'
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: A success message.
+      example:
+        message: 'Reservation canceled successfully.'
+    ErrorResponse:
+      type: object
+      properties:
+        error_code:
+          type: integer
+          format: int32
+          description: Application-specific error code.
+        message:
+          type: string
+          description: Error message detailing the issue.
+      example:
+        error_code: 404
+        message: 'Reservation not found.'
